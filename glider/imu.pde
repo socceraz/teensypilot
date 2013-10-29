@@ -77,12 +77,12 @@ void setup() {
 
     Serial.begin(115200);
 
-    delay(1000);
+    //delay(1000);
     // initialize device
     Serial.println("Initializing I2C devices...");
     accelgyro.initialize();
 
-    delay(2000);
+    //delay(2000);
     // verify connection
     Serial.println("Testing device connections...");
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
@@ -126,6 +126,8 @@ void loop() {
         controller_last_run=micros();
         
         accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+        Serial.println(ax);
+
 
         ax_squared = ax*ax;
         ay_squared = ay*ay;
@@ -135,13 +137,15 @@ void loop() {
         gy_scaled = gy/131.0;
         gz_scaled = gz/131.0;
 
+       
+
         roll = atan2( (double)(ax),sqrt(ay_squared+az_squared))*180/3.141;
         pitch = atan2( (double)(ay), sqrt(ax_squared+az_squared))*180/3.141;
 
         time1 = micros();
         
         deltaTime = (time1-time2)/1000000.0;
-        Serial.println(1/deltaTime);
+
         
         rollFiltered = rollKalmanFilter.getAngle(roll,gy_scaled,deltaTime);
         pitchFiltered = pitchKalmanFilter.getAngle(pitch,gx_scaled,deltaTime);
@@ -155,20 +159,20 @@ void loop() {
        
         //Serial.print("Pitch\t");
         //Serial.println(pitchFiltered);
-        Serial.println(1/deltaTime);
+
 
         // blink LED to indicate activity
         blinkState = !blinkState;
         digitalWrite(LED_PIN, blinkState);
         
 
-        servoPosition[0] = map(aileTime[1], 1000, 2000, 75000, 100000); //Left Aileron
-        servoPosition[1] = map(aileTime[1], 1000, 2000, 75000, 100000); //Right Aileron
+        servoPosition[0] = map(aileTime[1], 1000, 2000, 60000, 120000); //Left Aileron
+        servoPosition[1] = map(aileTime[1], 1000, 2000, 60000, 120000); //Right Aileron
         servoPosition[2] = map(elevTime[1], 1000, 2000, 50000, 170000); //Elevator
 
         //implement a simple feed back loop
-        servoPosition[0] += rollFiltered*100; 
-        servoPosition[1] += rollFiltered*100;
+        servoPosition[0] += rollFiltered*300; 
+        servoPosition[1] += rollFiltered*300;
         //servoPosition[2] += pitchFiltered*500; 
 
 
